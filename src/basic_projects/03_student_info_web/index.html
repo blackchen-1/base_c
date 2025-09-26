@@ -1,0 +1,819 @@
+<!-- student_management.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生信息管理系统</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* 学生列表样式 */
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .search-box button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-view {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        /* 统计信息 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            th, td {
+                padding: 8px 5px;
+                font-size: 14px;
+            }
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        /* 加载动画 */
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 消息提示 */
+        .message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 学生信息管理系统</h1>
+            <p>高效、便捷的学生信息管理平台</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">仪表板</button>
+            <button class="tab" data-tab="list">学生列表</button>
+            <button class="tab" data-tab="add">添加学生</button>
+        </div>
+
+        <div class="content">
+            <!-- 仪表板 -->
+            <div id="dashboard" class="section active">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStudents">0</div>
+                        <div class="stat-label">总学生数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="maleCount">0</div>
+                        <div class="stat-label">男生</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="femaleCount">0</div>
+                        <div class="stat-label">女生</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="avgAge">0</div>
+                        <div class="stat-label">平均年龄</div>
+                    </div>
+                </div>
+
+                <div class="message" id="dashboardMessage"></div>
+
+                <h2>最近添加的学生</h2>
+                <div id="recentStudents">
+                    <p>加载中...</p>
+                </div>
+            </div>
+
+            <!-- 学生列表 -->
+            <div id="list" class="section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="搜索学生姓名或班级...">
+                    <button onclick="searchStudents()">搜索</button>
+                    <button onclick="loadStudents()" style="background: #28a745;">刷新</button>
+                </div>
+
+                <div class="message" id="listMessage"></div>
+
+                <div id="studentsTable">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>姓名</th>
+                                <th>性别</th>
+                                <th>年龄</th>
+                                <th>班级</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsList">
+                            <tr>
+                                <td colspan="6" style="text-align: center;">
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <p>正在加载学生数据...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 添加/编辑学生 -->
+            <div id="add" class="section">
+                <h2 id="formTitle">添加新学生</h2>
+
+                <div class="message" id="formMessage"></div>
+
+                <form id="studentForm">
+                    <input type="hidden" id="studentId">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="studentName">姓名 *</label>
+                            <input type="text" id="studentName" required placeholder="请输入学生姓名">
+                        </div>
+                        <div class="form-group">
+                            <label for="studentGender">性别 *</label>
+                            <select id="studentGender" required>
+                                <option value="">请选择性别</option>
+                                <option value="男">男</option>
+                                <option value="女">女</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="studentAge">年龄 *</label>
+                            <input type="number" id="studentAge" min="10" max="30" required placeholder="请输入年龄">
+                        </div>
+                        <div class="form-group">
+                            <label for="studentClass">班级 *</label>
+                            <input type="text" id="studentClass" required placeholder="请输入班级名称">
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="cancelForm()">取消</button>
+                        <button type="submit" class="btn btn-success">保存学生信息</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>确认删除</h2>
+            <p>您确定要删除学生 <strong id="deleteStudentName"></strong> 吗？此操作无法撤销。</p>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
+                <button class="btn btn-delete" onclick="confirmDelete()">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentStudents = [];
+        let studentToDelete = null;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStudents();
+            setupTabs();
+            setupForm();
+        });
+
+        // 设置标签页切换
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+        }
+
+        // 切换标签页
+        function switchTab(tabName) {
+            // 更新标签页激活状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+
+            // 显示对应内容
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+
+            // 根据标签页执行相应操作
+            if (tabName === 'dashboard') {
+                updateDashboard();
+            } else if (tabName === 'list') {
+                loadStudents();
+            } else if (tabName === 'add') {
+                resetForm();
+            }
+        }
+
+        // 设置表单提交事件
+        function setupForm() {
+            document.getElementById('studentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveStudent();
+            });
+        }
+
+        // 加载学生数据
+        async function loadStudents() {
+            try {
+                showListMessage('正在加载数据...', 'info');
+                // 修改为调用新的API接口
+                const response = await fetch('/api/students');
+                if (!response.ok) throw new Error('网络请求失败');
+
+                const students = await response.json();
+                currentStudents = students;
+                displayStudents(students);
+                updateDashboard();
+                hideListMessage();
+            } catch (error) {
+                showListMessage('加载学生数据失败: ' + error.message, 'error');
+                console.error('加载学生数据失败:', error);
+            }
+        }
+
+        // 显示学生列表
+        function displayStudents(students) {
+            const tbody = document.getElementById('studentsList');
+
+            if (!students || students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">暂无学生数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = students.map(student => `
+                <tr>
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.gender}</td>
+                    <td>${student.age}</td>
+                    <td>${student.class_name}</td>
+                    <td class="actions">
+                        <button class="btn btn-view" onclick="viewStudent(${student.id})">查看</button>
+                        <button class="btn btn-edit" onclick="editStudent(${student.id})">编辑</button>
+                        <button class="btn btn-delete" onclick="showDeleteModal(${student.id}, '${student.name}')">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 搜索学生
+        function searchStudents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!searchTerm) {
+                displayStudents(currentStudents);
+                return;
+            }
+
+            const filteredStudents = currentStudents.filter(student =>
+                student.name.toLowerCase().includes(searchTerm) ||
+                student.class_name.toLowerCase().includes(searchTerm)
+            );
+
+            displayStudents(filteredStudents);
+        }
+
+        // 查看学生详情
+        function viewStudent(id) {
+            const student = currentStudents.find(s => s.id == id);
+            if (student) {
+                alert(`学生详情:\n\nID: ${student.id}\n姓名: ${student.name}\n性别: ${student.gender}\n年龄: ${student.age}\n班级: ${student.class_name}`);
+            }
+        }
+
+        // 编辑学生
+        function editStudent(id) {
+            const student = currentStudents.find(s => s.id == id);
+            if (student) {
+                // 切换到添加/编辑标签页
+                switchTab('add');
+
+                // 填充表单数据
+                document.getElementById('studentId').value = student.id;
+                document.getElementById('studentName').value = student.name;
+                document.getElementById('studentGender').value = student.gender;
+                document.getElementById('studentAge').value = student.age;
+                document.getElementById('studentClass').value = student.class_name;
+
+                // 更新标题
+                document.getElementById('formTitle').textContent = '编辑学生信息';
+            }
+        }
+
+        // 显示删除确认模态框
+        function showDeleteModal(id, name) {
+            studentToDelete = id;
+            document.getElementById('deleteStudentName').textContent = name;
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        // 关闭删除模态框
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            studentToDelete = null;
+        }
+
+        // 确认删除
+        async function confirmDelete() {
+            if (studentToDelete) {
+                try {
+                    const response = await fetch(`/api/students/${studentToDelete}`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showListMessage('学生删除成功！', 'success');
+                        closeDeleteModal();
+                        loadStudents(); // 重新加载数据
+                    } else {
+                        showListMessage('删除失败: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    showListMessage('删除失败: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // 重置表单
+        function resetForm() {
+            document.getElementById('studentForm').reset();
+            document.getElementById('studentId').value = '';
+            document.getElementById('formTitle').textContent = '添加新学生';
+        }
+
+        // 取消表单操作
+        function cancelForm() {
+            resetForm();
+            switchTab('list');
+        }
+
+        // 保存学生信息
+        async function saveStudent() {
+            const id = document.getElementById('studentId').value;
+            const name = document.getElementById('studentName').value;
+            const gender = document.getElementById('studentGender').value;
+            const age = document.getElementById('studentAge').value;
+            const className = document.getElementById('studentClass').value;
+
+            // 简单验证
+            if (!name || !gender || !age || !className) {
+                showFormMessage('请填写所有必填字段', 'error');
+                return;
+            }
+
+            try {
+                const studentData = `name=${encodeURIComponent(name)}&gender=${encodeURIComponent(gender)}&age=${age}&class_name=${encodeURIComponent(className)}`;
+
+                let response;
+                if (id) {
+                    // 更新学生
+                    response = await fetch(`/api/students/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: studentData
+                    });
+                } else {
+                    // 添加学生
+                    response = await fetch('/api/students', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: studentData
+                    });
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showFormMessage(id ? '学生信息更新成功！' : '学生添加成功！', 'success');
+
+                    // 重置表单并刷新数据
+                    setTimeout(() => {
+                        resetForm();
+                        loadStudents();
+                        switchTab('list');
+                    }, 1000);
+                } else {
+                    showFormMessage('操作失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showFormMessage('操作失败: ' + error.message, 'error');
+            }
+        }
+
+        // 更新仪表板统计信息
+        function updateDashboard() {
+            if (!currentStudents || currentStudents.length === 0) return;
+
+            const total = currentStudents.length;
+            const maleCount = currentStudents.filter(s => s.gender === '男').length;
+            const femaleCount = currentStudents.filter(s => s.gender === '女').length;
+
+            // 计算平均年龄
+            const totalAge = currentStudents.reduce((sum, student) => sum + parseInt(student.age), 0);
+            const avgAge = total > 0 ? (totalAge / total).toFixed(1) : 0;
+
+            // 更新显示
+            document.getElementById('totalStudents').textContent = total;
+            document.getElementById('maleCount').textContent = maleCount;
+            document.getElementById('femaleCount').textContent = femaleCount;
+            document.getElementById('avgAge').textContent = avgAge;
+
+            // 显示最近添加的学生（这里简单显示前3个）
+            const recentStudents = currentStudents.slice(0, 3);
+            const recentDiv = document.getElementById('recentStudents');
+            if (recentStudents.length > 0) {
+                recentDiv.innerHTML = `
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>性别</th>
+                                <th>年龄</th>
+                                <th>班级</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${recentStudents.map(s => `
+                                <tr>
+                                    <td>${s.name}</td>
+                                    <td>${s.gender}</td>
+                                    <td>${s.age}</td>
+                                    <td>${s.class_name}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                recentDiv.innerHTML = '<p>暂无学生数据</p>';
+            }
+        }
+
+        // 显示消息
+        function showListMessage(message, type) {
+            const msgDiv = document.getElementById('listMessage');
+            msgDiv.textContent = message;
+            msgDiv.className = 'message ' + (type === 'error' ? 'error' : 'success');
+            msgDiv.style.display = 'block';
+
+            if (type !== 'error') {
+                setTimeout(() => {
+                    msgDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function hideListMessage() {
+            document.getElementById('listMessage').style.display = 'none';
+        }
+
+        function showFormMessage(message, type) {
+            const msgDiv = document.getElementById('formMessage');
+            msgDiv.textContent = message;
+            msgDiv.className = 'message ' + (type === 'error' ? 'error' : 'success');
+            msgDiv.style.display = 'block';
+
+            if (type !== 'error') {
+                setTimeout(() => {
+                    msgDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // 模态框关闭事件
+        document.querySelector('.close').onclick = closeDeleteModal;
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('deleteModal');
+            if (event.target === modal) {
+                closeDeleteModal();
+            }
+        };
+
+        // 搜索框回车事件
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchStudents();
+            }
+        });
+    </script>
+</body>
+</html>

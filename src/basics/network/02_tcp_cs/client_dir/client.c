@@ -23,7 +23,7 @@ int main(void)
     memset(&serveraddr, 0, sizeof(serveraddr));
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_port  = htons(8080);
-    serveraddr.sin_addr.s_addr = inet_addr("10.102.106.45");
+    serveraddr.sin_addr.s_addr = inet_addr("10.102.106.157");
     serveraddr_len = sizeof(serveraddr);
 
     int ret = connect(sockfd, (struct sockaddr *)&serveraddr, serveraddr_len);

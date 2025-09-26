@@ -103,8 +103,8 @@ void NetEndianess_to_ipstr(void)
 
 void main(void)
 {
-    /* test_host_endianess(); */
+    test_host_endianess();
     /* test_host_endianess_change(); */
     /* ipstr_to_NetEndianess(); */
-    NetEndianess_to_ipstr();
+    /* NetEndianess_to_ipstr(); */
 }
